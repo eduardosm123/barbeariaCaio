@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { requireAuth } = require('../middleware/auth');
 const {
     getAdmin,
     getAllAdmins,
@@ -13,13 +14,13 @@ router.get('/admin/:id', getAdmin);
 // GET /admin
 router.get('/admin', getAllAdmins);
 
-// POST /admin
-router.post('/admin', createAdmin);
+// POST /admin (protegido)
+router.post('/admin', requireAuth, createAdmin);
 
-// PATCH /admin/:id
-router.patch('/admin/:id', updateAdmin);
+// PATCH /admin/:id (protegido)
+router.patch('/admin/:id', requireAuth, updateAdmin);
 
-// DELETE /admin/:id
-router.delete('/admin/:id', deleteAdmin);
+// DELETE /admin/:id (protegido)
+router.delete('/admin/:id', requireAuth, deleteAdmin);
 
 module.exports = router;

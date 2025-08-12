@@ -6,12 +6,22 @@ require('dotenv').config();
 const app = express()
 
 // middwares
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5500', 'http://127.0.0.1:5500'],
+    credentials: true,
+    exposedHeaders: ['x-session-id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id']
+}))
 app.use(express.json()) //cominicacao via json
 
 // DB connection
 const conn = require("./db/conn");
 conn();
+
+// Sistema simples de sessões em memória
+let activeSessions = new Set();
+// Tornar activeSessions acessível globalmente
+global.activeSessions = activeSessions;
 
 // routes
 const routes = require("./routes/router");
@@ -22,8 +32,9 @@ app.get('/test', (req, res) => {
         message: 'Barbearia VIP Backend - Servidor funcionando!', 
         timestamp: new Date().toISOString(),
         endpoints: {
-            admin: ['GET /admin', 'GET /admin/:id', 'POST /admin', 'PATCH /admin/:id', 'DELETE /admin/:id'],
-            horarios: ['GET /horarios', 'PATCH /horarios'],
+            auth: ['POST /auth/login', 'POST /auth/logout', 'GET /auth/verify'],
+            admin: ['GET /admin', 'GET /admin/:id', 'POST /admin (protegido)', 'PATCH /admin/:id (protegido)', 'DELETE /admin/:id (protegido)'],
+            horarios: ['GET /horarios', 'PATCH /horarios (protegido)'],
             agendamentos: ['GET /agendamentos', 'POST /agendamentos', 'GET /agendamentos/:id', 'PATCH /agendamentos/:id', 'DELETE /agendamentos/:id'],
             legacy: ['GET /category', 'GET /product']
         }
