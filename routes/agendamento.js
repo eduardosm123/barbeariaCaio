@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { requireAuth } = require('../middleware/auth');
 const {
     getAllAgendamentos,
     getAgendamento,
@@ -18,10 +19,10 @@ router.get('/agendamentos/:id', getAgendamento);
 router.post('/agendamentos', createAgendamento);
 
 // PATCH /agendamentos/:id
-router.patch('/agendamentos/:id', updateAgendamento);
+router.patch('/agendamentos/:id', requireAuth, updateAgendamento);
 
 // DELETE /agendamentos/:id
-router.delete('/agendamentos/:id', deleteAgendamento);
+router.delete('/agendamentos/:id', requireAuth, deleteAgendamento);
 
 // GET /agendamentos/data/:data
 router.get('/agendamentos/data/:data', getAgendamentosByData);
