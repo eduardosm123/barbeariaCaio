@@ -2,20 +2,17 @@
 
 const router = require('express').Router();
 
-// importação das rotas existentes
-const categoryRouter = require('./category')
-const productRouter = require('./product')
+ 
 
 // importação das novas rotas para barbearia
 const adminRouter = require('./admin')
 const horariosRouter = require('./horarios')
 const agendamentoRouter = require('./agendamento')
-
-// rotas existentes
-router.use("/", categoryRouter);
-router.use("/", productRouter);
+const authRouter = require('./auth')
+ 
 
 // novas rotas para barbearia
+router.use("/auth", authRouter);
 router.use("/", adminRouter);
 router.use("/", horariosRouter);
 router.use("/", agendamentoRouter);

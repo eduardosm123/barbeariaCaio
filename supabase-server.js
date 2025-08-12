@@ -7,7 +7,10 @@ require('dotenv').config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://barbeariacaio.onrender.com', 'file://', 'http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5173', 'http://localhost:5173'],
+    credentials: true
+}));
 app.use(express.json());
 
 // Inicializar Supabase

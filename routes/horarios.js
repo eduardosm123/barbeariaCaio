@@ -3,11 +3,12 @@ const {
     getHorarios,
     updateHorarios
 } = require('../controllers/horariosController');
+const requireAuth = require('../middleware/auth');
 
-// GET /horarios
+// GET /horarios - público (para clientes verem horários disponíveis)
 router.get('/horarios', getHorarios);
 
-// PATCH /horarios
-router.patch('/horarios', updateHorarios);
+// PATCH /horarios - protegido (só admin pode modificar)
+router.patch('/horarios', requireAuth, updateHorarios);
 
 module.exports = router;

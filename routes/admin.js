@@ -6,20 +6,21 @@ const {
     updateAdmin,
     deleteAdmin
 } = require('../controllers/adminController');
+const requireAuth = require('../middleware/auth');
 
-// GET /admin/:id
-router.get('/admin/:id', getAdmin);
+// GET /admin/:id - protegido
+router.get('/admin/:id', requireAuth, getAdmin);
 
-// GET /admin
-router.get('/admin', getAllAdmins);
+// GET /admin - protegido
+router.get('/admin', requireAuth, getAllAdmins);
 
-// POST /admin
-router.post('/admin', createAdmin);
+// POST /admin - protegido (só admin pode criar outros admins)
+router.post('/admin', requireAuth, createAdmin);
 
-// PATCH /admin/:id
-router.patch('/admin/:id', updateAdmin);
+// PATCH /admin/:id - protegido
+router.patch('/admin/:id', requireAuth, updateAdmin);
 
-// DELETE /admin/:id
-router.delete('/admin/:id', deleteAdmin);
+// DELETE /admin/:id - protegido
+router.delete('/admin/:id', requireAuth, deleteAdmin);
 
 module.exports = router;
