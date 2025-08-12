@@ -6,24 +6,22 @@ require('dotenv').config();
 const app = express()
 
 const allowedOrigins = [
-    'https://www.barbeariavip.site',
-    'https://barbeariavip.site',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173'
+  'https://www.barbeariavip.site',
+  'https://barbeariavip.site',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
 ];
 
-const corsOptions = {
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-// middlewares
-app.use(cors(corsOptions));
-app.use(express.json()); //cominicacao via json
+app.use(cors({
+  origin: function (origin, cb) {
+    if (!origin) return cb(null, true); // Postman/mobile
+    cb(null, allowedOrigins.includes(origin));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+}));
+app.options('*', cors()); //cominicacao via json
 
 // DB connection
 const conn = require("./db/conn");
