@@ -1,4 +1,3 @@
-
 # Barbearia VIP - Backend
 
 Backend para o sistema de agendamento da Barbearia VIP, desenvolvido com Node.js, Express e MongoDB.
