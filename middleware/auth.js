@@ -1,8 +1,8 @@
 // Sistema simples de sessões em memória (importado do app.js)
 // Middleware para verificar autenticação (para rotas protegidas)
 const requireAuth = (req, res, next) => {
-    const sessionId = req.headers['x-session-id'] || req.query.sessionId;
-    
+    const sessionId = req.get('x-session-id') || req.query.sessionId;
+
     // Verificar se o global.activeSessions existe e foi inicializado
     if (!global.activeSessions) {
         console.error('Sistema de sessões não inicializado');
