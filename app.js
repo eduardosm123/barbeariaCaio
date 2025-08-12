@@ -7,21 +7,17 @@ const app = express();
 const cors = require('cors');
 
 const allowlist = ['https://www.barbeariavip.site', 'https://barbeariavip.site'];
-const corsOptions = (req, cb) => {
-  const origin = req.header('Origin');
-  const ok = !origin || allowlist.includes(origin); // permite curl/health sem Origin
-  cb(null, {
-    origin: ok ? origin : false,      // ecoa a origem permitida
-    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
-    credentials: false,               // deixe false se não usa cookies; se precisar, mantenha true
-    optionsSuccessStatus: 204,
-    maxAge: 86400
-  });
+const corsOptions = {
+  origin: (origin, cb) => cb(null, !origin || allowlist.includes(origin) ? true : false), // ecoa a origem permitida
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
+  credentials: false,                   // deixe false (você usa Bearer, não cookies)
+  optionsSuccessStatus: 204,
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); 
+app.options('*', cors(corsOptions));
 // Middleware adicional para garantir CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
