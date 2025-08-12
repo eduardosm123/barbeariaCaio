@@ -1,59 +1,33 @@
 
 const express = require('express');
-const cors = require("cors");
-require('dotenv').config();
-// centraliza as configuracoes
-const app = express()
+const app = express();
 
-const allowedOrigins = [
-  'https://www.barbeariavip.site',
-  'https://barbeariavip.site',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-];
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    // Reflete a origem — funciona com credentials
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Vary', 'Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header(
+    'Access-Control-Allow-Headers',
+    req.header('Access-Control-Request-Headers') || 'Content-Type, Authorization'
+  );
+  res.header(
+    'Access-Control-Allow-Methods',
+    req.header('Access-Control-Request-Method') || 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+  );
 
-app.use(cors({
-  origin: function (origin, cb) {
-    if (!origin) return cb(null, true); // Postman/mobile
-    cb(null, allowedOrigins.includes(origin));
-  },
-  credentials: true,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-}));
-app.options('*', cors()); //cominicacao via json
-
-// DB connection
-const conn = require("./db/conn");
-conn();
-
-// routes
-const routes = require("./routes/router");
-
-// Rota de teste para verificar se o servidor está funcionando
-app.get('/test', (req, res) => {
-    res.json({ 
-        message: 'Barbearia VIP Backend - Servidor funcionando!', 
-        timestamp: new Date().toISOString(),
-        origin: req.headers.origin,
-        userAgent: req.headers['user-agent'],
-        endpoints: {
-            admin: ['GET /admin', 'GET /admin/:id', 'POST /admin', 'PATCH /admin/:id', 'DELETE /admin/:id'],
-            horarios: ['GET /horarios', 'PATCH /horarios'],
-            agendamentos: ['GET /agendamentos', 'POST /agendamentos', 'GET /agendamentos/:id', 'PATCH /agendamentos/:id', 'DELETE /agendamentos/:id'],
-            auth: ['POST /auth/login', 'POST /auth/logout', 'GET /auth/verify']
-        }
-    });
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
 });
 
-// Rota específica para testar CORS
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.sendStatus(200);
-});
+app.use(express.json());
+
+// monte suas rotas normalmente:
+const routes = require('./routes/router');
+app.use('/', routes);
 
 app.use('/', routes);
 
