@@ -3,10 +3,13 @@
 const requireAuth = (req, res, next) => {
     const sessionId = req.headers['x-session-id'] || req.query.sessionId;
     
-    // Importar activeSessions do contexto global ou usar uma implementação local
-    const activeSessions = global.activeSessions || new Set();
+    // Verificar se o global.activeSessions existe e foi inicializado
+    if (!global.activeSessions) {
+        console.error('Sistema de sessões não inicializado');
+        return res.status(500).json({ message: 'Erro interno do servidor - sessões não inicializadas' });
+    }
     
-    if (!sessionId || !activeSessions.has(sessionId)) {
+    if (!sessionId || !global.activeSessions.has(sessionId)) {
         return res.status(401).json({ message: 'Acesso negado. Faça login primeiro.' });
     }
     

@@ -61,8 +61,14 @@ router.get('/verify', async (req, res) => {
             return res.status(401).json({ valid: false, message: 'Sessão inválida' });
         }
         
-        // Buscar dados do admin para retornar (pode ser melhorado para armazenar dados da sessão)
-        const admin = await Admin.findOne(); // Por enquanto, pega o primeiro admin
+        // Buscar dados do admin para retornar
+        let admin;
+        try {
+            admin = await Admin.findOne(); // Pega o primeiro admin disponível
+        } catch (dbError) {
+            console.log('Erro ao buscar admin no banco:', dbError.message);
+            // Retornar dados padrão se não conseguir acessar o banco
+        }
         
         res.json({ 
             valid: true, 
@@ -74,6 +80,7 @@ router.get('/verify', async (req, res) => {
         });
         
     } catch (error) {
+        console.error('Erro na verificação:', error);
         res.status(401).json({ valid: false, message: 'Erro na verificação' });
     }
 });
