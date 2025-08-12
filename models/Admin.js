@@ -14,7 +14,7 @@ const adminSchema = new Schema({
     },
     email: {
         type: String,
-        required: true,
+        required: false,
         unique: true
     }
 }, { timestamps: true });
