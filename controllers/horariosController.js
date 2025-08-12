@@ -1,5 +1,4 @@
-const { Horarios } = require("../models/Horarios");
-const { Admin } = require("../models/Admin");
+const { Horarios } = require("../models/Horarios"); 
 // GET /horarios
 const getHorarios = async (req, res) => {
   try {
@@ -193,21 +192,8 @@ const getHorarios = async (req, res) => {
 // PATCH /horarios
 const updateHorarios = async (req, res) => {
   try {
-    const { username, password } = req.body;
+     
 
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username e password são obrigatórios" });
-    }
-
-    // Buscar admin no banco de dados
-    const admin = await Admin.findOne({ username, password });
-
-    if (!admin) {
-      return res.status(401).json({ message: "Credenciais inválidas" });
-    }
-    
     const { segunda, terca, quarta, quinta, sexta, sabado, domingo } = req.body;
 
     const updates = {};
