@@ -1,59 +1,36 @@
 
-const express = require('express'); 
+const express = require('express');
+const cors = require("cors");
 require('dotenv').config();
+// centraliza as configuracoes
+const app = express()
 
-const app = express();
-
-const cors = require('cors');
-
-const allowlist = ['https://www.barbeariavip.site', 'https://barbeariavip.site'];
-const corsOptions = {
-  origin: (origin, cb) => cb(null, !origin || allowlist.includes(origin) ? true : false), // ecoa a origem permitida
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
-  credentials: false,                   // deixe false (você usa Bearer, não cookies)
-  optionsSuccessStatus: 204,
-  maxAge: 86400
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-// Middleware adicional para garantir CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
-
-app.use(express.json());
+// middwares
+app.use(cors())
+app.use(express.json()) //cominicacao via json
 
 // DB connection
 const conn = require("./db/conn");
 conn();
 
-// monte suas rotas normalmente:
-const routes = require('./routes/router');
-app.use('/', routes);
+// routes
+const routes = require("./routes/router");
 
-// Rota de teste
+// Rota de teste para verificar se o servidor está funcionando
 app.get('/test', (req, res) => {
     res.json({ 
         message: 'Barbearia VIP Backend - Servidor funcionando!', 
         timestamp: new Date().toISOString(),
-        cors: 'enabled for all origins',
         endpoints: {
-            auth: ['POST /auth/login', 'POST /auth/logout', 'GET /auth/verify'],
             admin: ['GET /admin', 'GET /admin/:id', 'POST /admin', 'PATCH /admin/:id', 'DELETE /admin/:id'],
             horarios: ['GET /horarios', 'PATCH /horarios'],
-            agendamentos: ['GET /agendamentos', 'POST /agendamentos', 'GET /agendamentos/:id', 'PATCH /agendamentos/:id', 'DELETE /agendamentos/:id']
+            agendamentos: ['GET /agendamentos', 'POST /agendamentos', 'GET /agendamentos/:id', 'PATCH /agendamentos/:id', 'DELETE /agendamentos/:id'],
+            legacy: ['GET /category', 'GET /product']
         }
     });
 });
+
+app.use('/', routes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, function() {
