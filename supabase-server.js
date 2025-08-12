@@ -340,6 +340,59 @@ app.get('/agendamentos/:id', async (req, res) => {
     }
 });
 
+// PATCH /agendamentos/:id
+app.patch('/agendamentos/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!status) {
+            return res.status(400).json({ message: 'Status é obrigatório' });
+        }
+
+        const { data: agendamento, error } = await supabase
+            .from('agendamentos')
+            .update({ status, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error || !agendamento) {
+            return res.status(404).json({ message: 'Agendamento não encontrado' });
+        }
+
+        res.json(agendamento);
+
+    } catch (error) {
+        console.error('Erro ao atualizar agendamento:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+});
+
+// DELETE /agendamentos/:id
+app.delete('/agendamentos/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { data: agendamento, error } = await supabase
+            .from('agendamentos')
+            .delete()
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error || !agendamento) {
+            return res.status(404).json({ message: 'Agendamento não encontrado' });
+        }
+
+        res.json({ message: 'Agendamento deletado com sucesso' });
+
+    } catch (error) {
+        console.error('Erro ao deletar agendamento:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+});
+
 // Inicializar servidor
 const PORT = process.env.PORT || 3000;
 
