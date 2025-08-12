@@ -1,17 +1,31 @@
 
-const express = require('express');
-const cors = require('cors');
+const express = require('express'); 
 require('dotenv').config();
 
 const app = express();
 
-// CORS totalmente aberto - permite qualquer origem
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: false
-}));
+const cors = require('cors');
+
+const allowlist = [
+  'https://www.barbeariavip.site',
+  'https://barbeariavip.site'
+];
+
+const corsOptions = (req, cb) => {
+  const origin = req.header('Origin');
+  const isAllowed = !origin || allowlist.includes(origin); // permite curl/healthcheck sem Origin
+  cb(null, {
+    origin: isAllowed ? origin : false,   // ecoa a origem quando permitido
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
+    credentials: false,                    // coloque true só se usar cookies/sessão
+    optionsSuccessStatus: 204,
+    maxAge: 86400
+  });
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); 
 
 // Middleware adicional para garantir CORS
 app.use((req, res, next) => {
