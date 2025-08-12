@@ -5,45 +5,25 @@ require('dotenv').config();
 // centraliza as configuracoes
 const app = express()
 
-// Configuração CORS mais permissiva para resolver o problema
+const allowedOrigins = [
+    'https://www.barbeariavip.site',
+    'https://barbeariavip.site',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
+];
+
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Permite requisições sem origin (apps mobile, Postman, etc.)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = [
-            'https://www.barbeariavip.site',
-            'https://barbeariavip.site',
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://localhost:5173',
-            'http://127.0.0.1:5173'
-        ];
-        
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.log('CORS bloqueado para origin:', origin);
-            callback(null, true); // Temporariamente permissivo para debug
-        }
-    },
+    origin: allowedOrigins,
     credentials: true,
-    optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'Origin',
-        'Access-Control-Request-Method',
-        'Access-Control-Request-Headers'
-    ]
+    allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// middwares
-app.use(cors(corsOptions))
-app.use(express.json()) //cominicacao via json
+// middlewares
+app.use(cors(corsOptions));
+app.use(express.json()); //cominicacao via json
 
 // DB connection
 const conn = require("./db/conn");
