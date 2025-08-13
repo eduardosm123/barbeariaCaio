@@ -287,6 +287,88 @@ app.get('/agendamentos', async (req, res) => {
     }
 });
 
+// Endpoint paginado com filtros para agendamentos
+app.get('/agendamentos/paginated', async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            data: dataFiltro,
+            status,
+            sortBy = 'created_at',
+            sortOrder = 'desc'
+        } = req.query;
+
+        // Validar parâmetros de paginação
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        
+        if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+            return res.status(400).json({ 
+                message: 'Parâmetros de paginação inválidos. Page >= 1, limit entre 1 e 100' 
+            });
+        }
+
+        // Calcular offset
+        const offset = (pageNum - 1) * limitNum;
+
+        // Construir query base
+        let query = supabase
+            .from('agendamentos')
+            .select('*', { count: 'exact' });
+
+        // Aplicar filtro por data se fornecido
+        if (dataFiltro) {
+            query = query.eq('data', dataFiltro);
+        }
+
+        // Aplicar filtro por status se fornecido
+        if (status) {
+            query = query.eq('status', status);
+        }
+
+        // Aplicar ordenação
+        const ascending = sortOrder.toLowerCase() === 'asc';
+        query = query.order(sortBy, { ascending });
+
+        // Aplicar paginação
+        query = query.range(offset, offset + limitNum - 1);
+
+        const { data: agendamentos, error, count } = await query;
+
+        if (error) {
+            return res.status(500).json({ message: 'Erro ao buscar agendamentos' });
+        }
+
+        // Calcular informações de paginação
+        const totalPages = Math.ceil(count / limitNum);
+        const hasNextPage = pageNum < totalPages;
+        const hasPrevPage = pageNum > 1;
+
+        res.json({
+            data: agendamentos || [],
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalItems: count,
+                itemsPerPage: limitNum,
+                hasNextPage,
+                hasPrevPage
+            },
+            filters: {
+                data: dataFiltro || null,
+                status: status || null,
+                sortBy,
+                sortOrder
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar agendamentos paginados:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+});
+
 app.post('/agendamentos', async (req, res) => {
     try {
         const { nome, telefone, servico, data, horario, status } = req.body;
