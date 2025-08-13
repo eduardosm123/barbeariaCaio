@@ -6,12 +6,23 @@ require('dotenv').config();
 // App com Supabase
 const app = express();
 
-// Middlewares - CORS completamente desabilitado
+// Middlewares - CORS configurado para o site específico
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = [
+        'https://www.barbeariavip.site',
+        'https://barbeariavip.site',   // Para outros servidores locais
+    ];
+    
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    }
+    
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-session-id');
     res.header('Access-Control-Allow-Credentials', 'true');
+    
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
     } else {
