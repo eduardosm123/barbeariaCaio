@@ -8,27 +8,30 @@ const app = express();
 
 // Middlewares - CORS configurado para o site específico
 app.use((req, res, next) => {
-    const allowedOrigins = [
-        'https://www.barbeariavip.site',
-        'https://barbeariavip.site',   // Para outros servidores locais
-    ];
-    
-    const origin = req.headers.origin;
-    
-    if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-    }
-    
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-session-id');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
+  const allowed = new Set([
+    'https://www.barbeariavip.site',
+    'https://barbeariavip.site',
+  ]);
+  const origin = req.headers.origin;
+
+  if (origin && allowed.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24h
+  } else if (origin) {
+    if (req.method === 'OPTIONS') return res.status(403).end();
+    return res.status(403).json({ message: 'Origin não permitida' });
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  const reqHeaders = req.headers['access-control-request-headers'];
+  res.setHeader('Access-Control-Allow-Headers', reqHeaders || 'Content-Type, Authorization, x-session-id');
+
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
 });
+
 app.use(express.json());
 
 // Inicializar Supabase
