@@ -344,15 +344,28 @@ app.get('/agendamentos/:id', async (req, res) => {
 app.patch('/agendamentos/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
+        const { nome, telefone, servico, data, horario, status } = req.body;
 
-        if (!status) {
-            return res.status(400).json({ message: 'Status é obrigatório' });
+        // Verificar se pelo menos um campo foi enviado para atualização
+        if (!nome && !telefone && !servico && !data && !horario && !status) {
+            return res.status(400).json({ message: 'Pelo menos um campo deve ser fornecido para atualização' });
         }
+
+        // Criar objeto com apenas os campos que foram enviados
+        const updateData = {};
+        if (nome !== undefined) updateData.nome = nome;
+        if (telefone !== undefined) updateData.telefone = telefone;
+        if (servico !== undefined) updateData.servico = servico;
+        if (data !== undefined) updateData.data = data;
+        if (horario !== undefined) updateData.horario = horario;
+        if (status !== undefined) updateData.status = status;
+        
+        // Sempre atualizar o timestamp
+        updateData.updated_at = new Date().toISOString();
 
         const { data: agendamento, error } = await supabase
             .from('agendamentos')
-            .update({ status, updated_at: new Date().toISOString() })
+            .update(updateData)
             .eq('id', id)
             .select()
             .single();
