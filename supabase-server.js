@@ -50,7 +50,7 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Função para gerar ID de sessão simples
+// Função para gerar ID de sessão simples 
 const generateSessionId = () => {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 };
