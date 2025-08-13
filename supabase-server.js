@@ -488,6 +488,64 @@ app.delete('/agendamentos/:id', requireAuth, async (req, res) => {
     }
 });
 
+// DELETE /agendamentos/cleanup/past - Remove todos os agendamentos que já passaram
+app.delete('/agendamentos/cleanup/past', requireAuth, async (req, res) => {
+    try {
+        // Obter data atual no formato YYYY-MM-DD
+        const hoje = new Date();
+        const dataAtual = hoje.toISOString().split('T')[0];
+        
+        // Obter hora atual no formato HH:MM
+        const horaAtual = hoje.toTimeString().split(' ')[0].substring(0, 5);
+
+        // Primeiro, buscar agendamentos que já passaram para contabilizar
+        const { data: agendamentosPassados, error: searchError } = await supabase
+            .from('agendamentos')
+            .select('*')
+            .or(`data.lt.${dataAtual},and(data.eq.${dataAtual},horario.lt.${horaAtual})`);
+
+        if (searchError) {
+            console.error('Erro ao buscar agendamentos passados:', searchError);
+            return res.status(500).json({ message: 'Erro ao buscar agendamentos passados' });
+        }
+
+        const quantidadeEncontrada = agendamentosPassados?.length || 0;
+
+        if (quantidadeEncontrada === 0) {
+            return res.json({ 
+                message: 'Nenhum agendamento passado encontrado para remover',
+                removidos: 0,
+                dataHoraReferencia: `${dataAtual} ${horaAtual}`
+            });
+        }
+
+        // Remover agendamentos que já passaram
+        const { data: agendamentosRemovidos, error: deleteError } = await supabase
+            .from('agendamentos')
+            .delete()
+            .or(`data.lt.${dataAtual},and(data.eq.${dataAtual},horario.lt.${horaAtual})`)
+            .select();
+
+        if (deleteError) {
+            console.error('Erro ao remover agendamentos passados:', deleteError);
+            return res.status(500).json({ message: 'Erro ao remover agendamentos passados' });
+        }
+
+        const quantidadeRemovida = agendamentosRemovidos?.length || 0;
+
+        res.json({ 
+            message: `${quantidadeRemovida} agendamento(s) passado(s) removido(s) com sucesso`,
+            removidos: quantidadeRemovida,
+            dataHoraReferencia: `${dataAtual} ${horaAtual}`,
+            agendamentosRemovidos: agendamentosRemovidos
+        });
+
+    } catch (error) {
+        console.error('Erro ao limpar agendamentos passados:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+});
+
 // Inicializar servidor
 const PORT = process.env.PORT || 3000;
 
